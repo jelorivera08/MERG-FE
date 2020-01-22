@@ -16,12 +16,19 @@ function updateNoteMutation(_id, content) {
     content
   };
 
-  console.log(variables);
   commitMutation(environment, {
     mutation,
     variables,
     onCompleted: (response, errors) => {
       console.log('Response received from server.');
+    },
+    updater: store => {
+      const newUpdatedNote = store.getRootField('updateNote');
+      const root = store.getRoot();
+      const notes = root.getLinkedRecords('notes');
+      const newNotes = notes.filter(v => v.getValue('_id') !== _id);
+
+      root.setLinkedRecords([...newNotes, newUpdatedNote], 'notes');
     },
     onError: err => console.error(err)
   });
